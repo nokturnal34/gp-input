@@ -4,9 +4,15 @@ let sheetsClient: sheets_v4.Sheets | null = null;
 let driveClient: drive_v3.Drive | null = null;
 
 function getAuth() {
-  const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  let credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!credentialsJson) {
     throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is not set");
+  }
+
+  // Strip wrapping quotes if Vercel double-quoted the value
+  credentialsJson = credentialsJson.trim();
+  if (credentialsJson.startsWith('"') && credentialsJson.endsWith('"')) {
+    credentialsJson = JSON.parse(credentialsJson);
   }
 
   const credentials = JSON.parse(credentialsJson);
