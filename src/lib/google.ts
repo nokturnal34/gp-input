@@ -10,12 +10,12 @@ function getAuth() {
   }
 
   // Strip wrapping quotes if Vercel double-quoted the value
-  credentialsJson = credentialsJson.trim();
-  if (credentialsJson.startsWith('"') && credentialsJson.endsWith('"')) {
-    credentialsJson = JSON.parse(credentialsJson);
+  let cleaned = credentialsJson.trim();
+  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    cleaned = JSON.parse(cleaned) as string;
   }
 
-  const credentials = JSON.parse(credentialsJson);
+  const credentials = JSON.parse(cleaned);
   return new google.auth.GoogleAuth({
     credentials,
     scopes: [
