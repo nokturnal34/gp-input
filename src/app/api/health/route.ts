@@ -4,6 +4,10 @@ import { getSheets, getDrive } from "@/lib/google";
 export async function GET() {
   const checks: Record<string, string> = {};
 
+  // Debug: show first 30 chars of env var
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
+  checks.env_debug = `len=${raw.length} first30=${raw.substring(0, 30)} charCodes=${[...raw.substring(0, 15)].map(c => c.charCodeAt(0)).join(",")}`;
+
   // Check Sheets API
   try {
     const sheets = getSheets();
