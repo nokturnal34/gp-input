@@ -4,18 +4,19 @@ import { getSheets, getDrive } from "@/lib/google";
 export async function GET() {
   const checks: Record<string, string> = {};
 
-  // Debug: show first 30 chars of env var
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
-  checks.env_debug = `len=${raw.length} first30=${raw.substring(0, 30)} charCodes=${[...raw.substring(0, 15)].map(c => c.charCodeAt(0)).join(",")}`;
-
   // Check Sheets API
   try {
     const sheets = getSheets();
-    await sheets.spreadsheets.get({
-      spreadsheetId: process.env.REGISTRY_SHEET_ID || "test",
-      fields: "spreadsheetId",
-    });
-    checks.sheets = "ok";
+    const registryId = process.env.REGISTRY_SHEET_ID;
+    if (!registryId) {
+      checks.sheets = "ok (no registry sheet configured)";
+    } else {
+      await sheets.spreadsheets.get({
+        spreadsheetId: registryId,
+        fields: "spreadsheetId",
+      });
+      checks.sheets = "ok";
+    }
   } catch (e: unknown) {
     const error = e as Error;
     checks.sheets = `error: ${error.message}`;
