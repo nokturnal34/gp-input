@@ -7,6 +7,7 @@ export interface FormPlaceholder {
   promptText: string;
   clientResponse: string;
   status: string;
+  thumbnailUrl: string;
 }
 
 export interface FormConfig {
@@ -72,6 +73,7 @@ export async function loadFormConfig(
       promptText: row.prompt_text,
       clientResponse: row.client_response || "",
       status: row.status || "pending",
+      thumbnailUrl: row.slide_thumbnail_url || "",
     }));
 
   return {

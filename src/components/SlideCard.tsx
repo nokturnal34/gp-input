@@ -57,6 +57,17 @@ export default function SlideCard({
 
   return (
     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+      {/* Slide Thumbnail */}
+      {placeholders[0]?.thumbnailUrl && (
+        <div className="bg-neutral-50 border-b border-neutral-100">
+          <img
+            src={placeholders[0].thumbnailUrl}
+            alt={`Slide ${slideNumber}`}
+            className="w-full"
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-3">
         <div className="flex items-center gap-2">
