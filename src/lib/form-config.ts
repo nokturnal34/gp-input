@@ -34,6 +34,7 @@ export async function getClientSheetId(clientSlug: string): Promise<{
   passcode: string;
   client: string;
   driveFolderId: string;
+  published: boolean;
 } | null> {
   if (!REGISTRY_SHEET_ID) {
     throw new Error("REGISTRY_SHEET_ID environment variable is not set");
@@ -51,6 +52,7 @@ export async function getClientSheetId(clientSlug: string): Promise<{
     passcode: match.passcode,
     client: match.client_name,
     driveFolderId: match.drive_folder_id || "",
+    published: match.published?.toLowerCase() === "true",
   };
 }
 
@@ -63,9 +65,9 @@ export async function loadFormConfig(
 ): Promise<FormConfig> {
   const rows = await readSheet(sheetId);
 
-  // Filter out config rows (if any)
+  // Filter out config rows and dismissed fields
   const placeholders: FormPlaceholder[] = rows
-    .filter((row) => row.slide_number && row.slide_number !== "_config")
+    .filter((row) => row.slide_number && row.slide_number !== "_config" && row.status !== "dismissed")
     .map((row) => ({
       slideNumber: row.slide_number,
       elementId: row.element_id,

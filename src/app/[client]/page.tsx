@@ -15,6 +15,7 @@ export default function ClientFormPage() {
   const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [draft, setDraft] = useState(false);
 
   // Check if already authenticated (cookie exists)
   useEffect(() => {
@@ -29,6 +30,11 @@ export default function ClientFormPage() {
       if (res.status === 401) {
         // Not authenticated yet
         setAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+      if (res.status === 403) {
+        setDraft(true);
         setLoading(false);
         return;
       }
@@ -56,6 +62,10 @@ export default function ClientFormPage() {
         body: JSON.stringify({ clientSlug, passcode }),
       });
 
+      if (res.status === 403) {
+        setDraft(true);
+        return false;
+      }
       if (!res.ok) {
         return false;
       }
@@ -68,6 +78,22 @@ export default function ClientFormPage() {
     } catch {
       return false;
     }
+  }
+
+  if (draft) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-neutral-50">
+        <div className="text-center max-w-md px-6">
+          <h1 className="text-2xl font-semibold text-neutral-900 mb-3">Coming Soon</h1>
+          <p className="text-neutral-500">
+            This form is being prepared by General Proxy and will be available shortly.
+          </p>
+          <p className="text-neutral-400 text-sm mt-6">
+            Questions? Contact your GP representative.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (loading) {

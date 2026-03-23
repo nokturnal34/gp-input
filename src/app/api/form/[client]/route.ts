@@ -28,6 +28,13 @@ export async function GET(
       );
     }
 
+    if (!clientConfig.published) {
+      return NextResponse.json(
+        { error: "not_published" },
+        { status: 403 }
+      );
+    }
+
     // Load form data from Sheet
     const formConfig = await loadFormConfig(
       clientConfig.sheetId,

@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!clientConfig.published) {
+      return NextResponse.json(
+        { error: "not_published" },
+        { status: 403 }
+      );
+    }
+
     if (clientConfig.passcode !== passcode) {
       return NextResponse.json(
         { error: "Incorrect passcode" },
