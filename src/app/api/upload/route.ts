@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const error = e as Error;
     console.error("Upload error:", error.message, error.stack);
     return NextResponse.json(
-      { error: "Upload failed. Please try again.", detail: error.message },
+      { error: "Upload failed. Please try again." },
       { status: 500 }
     );
   }

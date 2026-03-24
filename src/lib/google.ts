@@ -201,16 +201,21 @@ export async function uploadToDrive(
   const drive = getDrive();
   const { Readable } = await import("stream");
 
+  const fileMetadata: Record<string, unknown> = {
+    name: fileName,
+  };
+  if (folderId) {
+    fileMetadata.parents = [folderId];
+  }
+
   const file = await drive.files.create({
-    requestBody: {
-      name: fileName,
-      parents: [folderId],
-    },
+    requestBody: fileMetadata,
     media: {
       mimeType,
       body: Readable.from(buffer),
     },
     fields: "id,webViewLink",
+    supportsAllDrives: true,
   });
 
   // Set sharing to anyone with link can view
@@ -220,6 +225,7 @@ export async function uploadToDrive(
       role: "reader",
       type: "anyone",
     },
+    supportsAllDrives: true,
   });
 
   return file.data.webViewLink || `https://drive.google.com/file/d/${file.data.id}/view`;
