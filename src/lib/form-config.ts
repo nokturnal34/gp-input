@@ -67,7 +67,7 @@ export async function loadFormConfig(
 
   // Filter out config rows and dismissed fields
   const placeholders: FormPlaceholder[] = rows
-    .filter((row) => row.slide_number && row.slide_number !== "_config" && row.status !== "dismissed")
+    .filter((row) => row.slide_number && row.slide_number !== "_config" && row.status?.toLowerCase() !== "dismissed")
     .map((row) => ({
       slideNumber: row.slide_number,
       elementId: row.element_id,
