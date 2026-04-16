@@ -50,7 +50,7 @@ export default function PasscodeGate({ clientSlug, onAuth }: PasscodeGateProps) 
               type="text"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              placeholder="e.g. klothos-2026"
+              placeholder="Enter your access code"
               className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm
                          focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
                          placeholder:text-neutral-400"
