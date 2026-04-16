@@ -50,13 +50,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload to Google Drive
-    console.log(`[Upload] Starting upload: file=${file.name}, size=${file.size}, type=${file.type}, elementId=${elementId}`);
+    console.log(`[Upload] Starting upload: file=${file.name}, size=${file.size}, type=${file.type}, elementId=${elementId}, driveFolderId=${driveFolderId}`);
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    if (!driveFolderId) {
+      console.error(`[Upload] ERROR: No driveFolderId provided`);
+      return NextResponse.json(
+        { error: "Drive folder not configured for this client" },
+        { status: 400 }
+      );
+    }
 
     let driveUrl: string;
     try {
       driveUrl = await uploadToDrive(
-        driveFolderId || "",
+        driveFolderId,
         file.name,
         file.type,
         buffer
