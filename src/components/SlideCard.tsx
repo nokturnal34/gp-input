@@ -20,7 +20,7 @@ interface SlideCardProps {
 function classifyFieldType(marker: string, promptText: string): "short" | "long" | "file" {
   const text = `${marker} ${promptText}`.toLowerCase();
 
-  const fileKeywords = ["logo", "image", "graphic", "photo", "headshot", "screenshot", "icon", "upload", "attach", "visual", "thumbnail"];
+  const fileKeywords = ["logo", "image", "graphic", "photo", "headshot", "screenshot", "icon", "upload", "attach", "visual", "thumbnail", "chart", "data", "diagram", "isometric", "exploded"];
   if (fileKeywords.some((kw) => text.includes(kw))) return "file";
 
   const longKeywords = ["bio", "description", "projection", "narrative", "financial", "update with", "complete this", "overview", "summary", "background"];
