@@ -50,16 +50,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload to Google Drive
+    console.log(`[Upload] Starting upload: file=${file.name}, size=${file.size}, type=${file.type}, elementId=${elementId}`);
     const buffer = Buffer.from(await file.arrayBuffer());
-    const driveUrl = await uploadToDrive(
-      driveFolderId || "",
-      file.name,
-      file.type,
-      buffer
-    );
+
+    let driveUrl: string;
+    try {
+      driveUrl = await uploadToDrive(
+        driveFolderId || "",
+        file.name,
+        file.type,
+        buffer
+      );
+      console.log(`[Upload] Successfully uploaded to Drive: ${driveUrl}`);
+    } catch (driveErr) {
+      console.error(`[Upload] Drive upload failed:`, driveErr);
+      throw new Error(`Failed to upload to Google Drive: ${driveErr instanceof Error ? driveErr.message : String(driveErr)}`);
+    }
 
     // Write the Drive URL to the Sheet as the response
-    await updateResponse(sheetId, elementId, driveUrl);
+    try {
+      await updateResponse(sheetId, elementId, driveUrl);
+      console.log(`[Upload] Updated sheet response for ${elementId}`);
+    } catch (sheetErr) {
+      console.warn(`[Upload] Failed to update sheet, but file uploaded OK:`, sheetErr);
+      // Continue - file is uploaded even if sheet update fails
+    }
 
     return NextResponse.json({
       success: true,

@@ -45,6 +45,7 @@ export default function SlideCard({
   onCommentChange,
   onFileUploaded,
 }: SlideCardProps) {
+  const [commentExpanded, setCommentExpanded] = useState(false);
   const dataPhs = placeholders.filter(
     (ph) => classifyFieldType(ph.marker, ph.promptText) !== "file"
   );
@@ -196,20 +197,39 @@ export default function SlideCard({
         </div>
       )}
 
-      {/* Slide Comment */}
-      <div className="border-t border-neutral-100 px-5 py-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          General comments (optional)
-        </label>
-        <textarea
-          value={comment}
-          onChange={(e) => onCommentChange(slideNumber, e.target.value)}
-          placeholder="Any additional notes or context for this slide..."
-          rows={2}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm
-                     focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
-                     placeholder:text-neutral-400"
-        />
+      {/* Slide Comment Button */}
+      <div className="border-t border-neutral-100 px-5 py-3">
+        <button
+          onClick={() => setCommentExpanded(!commentExpanded)}
+          className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-800 font-medium"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+          </svg>
+          {comment ? "Edit comment" : "Add comment"}
+          {comment && <span className="text-xs text-neutral-500">({comment.length} chars)</span>}
+        </button>
+
+        {commentExpanded && (
+          <div className="mt-3 space-y-2">
+            <textarea
+              value={comment}
+              onChange={(e) => onCommentChange(slideNumber, e.target.value)}
+              placeholder="Any additional notes or context for this slide..."
+              rows={3}
+              autoFocus
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm
+                         focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                         placeholder:text-neutral-400"
+            />
+            <button
+              onClick={() => setCommentExpanded(false)}
+              className="text-xs text-neutral-500 hover:text-neutral-700"
+            >
+              Done
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

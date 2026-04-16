@@ -57,8 +57,15 @@ export default function FileUpload({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Upload failed");
+        let errorMsg = "Upload failed";
+        try {
+          const data = await res.json();
+          errorMsg = data.error || `Upload failed (${res.status})`;
+        } catch {
+          errorMsg = `Upload failed (${res.status} ${res.statusText})`;
+        }
+        setError(errorMsg);
+        console.error("[FileUpload] Upload failed:", errorMsg);
         setUploading(false);
         setProgress(0);
         return;

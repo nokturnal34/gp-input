@@ -8,6 +8,7 @@ interface SubmitPayload {
   responses: Record<string, string>;
   deferred: string[];
   slideComments?: Record<string, string>;
+  saveOnly?: boolean;  // If true, save without marking as "filled"
 }
 
 export async function POST(request: NextRequest) {

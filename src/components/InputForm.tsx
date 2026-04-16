@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import SlideCard from "./SlideCard";
 import type { FormConfig } from "@/lib/form-config";
 
@@ -37,6 +37,8 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
   // Group placeholders by slide
@@ -51,15 +53,18 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     );
   }, [config.placeholders]);
 
-  // Progress
-  const totalFields = config.placeholders.length;
-  const filledFields = config.placeholders.filter(
-    (ph) =>
-      ph.status === "filled" ||
-      values[ph.elementId]?.trim() ||
-      deferred.has(ph.elementId)
-  ).length;
-  const progressPct = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+  // Progress - memoized to ensure it updates correctly
+  const { totalFields, filledFields, progressPct } = useMemo(() => {
+    const total = config.placeholders.length;
+    const filled = config.placeholders.filter(
+      (ph) =>
+        ph.status === "filled" ||
+        values[ph.elementId]?.trim() ||
+        deferred.has(ph.elementId)
+    ).length;
+    const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+    return { totalFields: total, filledFields: filled, progressPct: pct };
+  }, [config.placeholders, values, deferred]);
 
   function handleValueChange(elementId: string, value: string) {
     setValues((prev) => ({ ...prev, [elementId]: value }));
@@ -80,6 +85,51 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
 
   function handleFileUploaded(elementId: string, url: string) {
     setValues((prev) => ({ ...prev, [elementId]: url }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError("");
+
+    try {
+      const textResponses: Record<string, string> = {};
+      for (const [elementId, value] of Object.entries(values)) {
+        const ph = config.placeholders.find((p) => p.elementId === elementId);
+        if (!ph) continue;
+        if (ph.clientResponse === value) continue;
+        if (value.startsWith("https://drive.google.com")) continue;
+        if (value.trim()) {
+          textResponses[elementId] = value;
+        }
+      }
+
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientSlug,
+          sheetId: config.sheetId,
+          responses: textResponses,
+          deferred: Array.from(deferred),
+          slideComments: comments,
+          saveOnly: true,  // Flag to skip marking as "filled"
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Save failed");
+        setSaving(false);
+        return;
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setError("Save failed. Please try again.");
+    }
+
+    setSaving(false);
   }
 
   async function handleSubmit() {
@@ -188,8 +238,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
       {/* Form Body */}
       <div className="mx-auto max-w-2xl px-4 py-6 space-y-4">
         <p className="text-sm text-neutral-600">
-          Fill in the items below for your deck. You can submit partial
-          responses and come back to complete the rest later.
+          Fill in the items below for your deck. Use <span className="font-medium">"Save & continue later"</span> to preserve progress and come back anytime.
         </p>
 
         {slideGroups.map(([slideNum, placeholders]) => (
@@ -214,17 +263,31 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
       {/* Footer / Submit */}
       <div className="fixed bottom-0 inset-x-0 border-t border-neutral-200 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
-          <p className="text-xs text-neutral-400">
-            Powered by General Proxy
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-neutral-400">
+              Powered by General Proxy
+            </p>
+            {saved && (
+              <p className="text-xs text-green-600 font-medium">✓ Progress saved</p>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             {error && (
               <p className="text-xs text-red-600">{error}</p>
             )}
             <button
+              onClick={handleSave}
+              disabled={saving || submitting}
+              className="rounded-lg bg-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700
+                         hover:bg-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-colors"
+            >
+              {saving ? "Saving..." : "Save & continue later"}
+            </button>
+            <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || saving}
               className="rounded-lg bg-neutral-900 px-5 py-2 text-sm font-medium text-white
                          hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                          transition-colors"
