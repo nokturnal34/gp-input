@@ -17,16 +17,18 @@ export default function ClientFormPage() {
   const [error, setError] = useState("");
   const [draft, setDraft] = useState(false);
 
-  // Check if already authenticated (cookie exists)
-  useEffect(() => {
-    loadForm();
-  }, []);
-
   async function loadForm() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/form/${clientSlug}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+      const res = await fetch(`/api/form/${clientSlug}`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
       if (res.status === 401) {
         // Not authenticated yet
         setAuthenticated(false);
@@ -48,8 +50,14 @@ export default function ClientFormPage() {
       setFormConfig(data);
       setClientName(data.client);
       setAuthenticated(true);
-    } catch {
-      setError("Failed to connect. Please try again.");
+    } catch (e: unknown) {
+      const error = e as Error;
+      if (error.name === "AbortError") {
+        // Timeout - don't show error, just let them proceed to passcode gate
+        setAuthenticated(false);
+      } else {
+        setError("Failed to connect. Please try again.");
+      }
     }
     setLoading(false);
   }

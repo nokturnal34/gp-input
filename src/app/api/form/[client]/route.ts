@@ -8,11 +8,13 @@ export async function GET(
 ) {
   try {
     const { client: clientSlug } = await params;
+    console.log(`[Form] Loading form for: ${clientSlug}`);
 
     // Verify session cookie
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get(`gp_session_${clientSlug}`);
     if (!sessionCookie) {
+      console.log(`[Form] No session cookie for ${clientSlug}`);
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
@@ -20,6 +22,7 @@ export async function GET(
     }
 
     // Look up client config
+    console.log(`[Form] Looking up config for ${clientSlug}`);
     const clientConfig = await getClientSheetId(clientSlug);
     if (!clientConfig) {
       return NextResponse.json(
