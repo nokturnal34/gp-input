@@ -15,6 +15,7 @@ export interface FormConfig {
   sheetId: string;
   driveFolderId: string;
   placeholders: FormPlaceholder[];
+  slideComments: Record<string, string>;  // Map of slide_number -> comment
 }
 
 /**
@@ -78,10 +79,21 @@ export async function loadFormConfig(
       thumbnailUrl: row.slide_thumbnail_url || "",
     }));
 
+  // Extract slide comments (one per slide, take first non-empty comment)
+  const slideComments: Record<string, string> = {};
+  for (const row of rows) {
+    if (row.slide_number && row.slide_number !== "_config" && row.slide_comment) {
+      if (!slideComments[row.slide_number]) {
+        slideComments[row.slide_number] = row.slide_comment;
+      }
+    }
+  }
+
   return {
     client: clientName,
     sheetId,
     driveFolderId: "",
     placeholders,
+    slideComments,
   };
 }

@@ -30,6 +30,11 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     );
   });
 
+  const [comments, setComments] = useState<Record<string, string>>(() => {
+    // Initialize with existing slide comments
+    return { ...config.slideComments };
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -69,6 +74,10 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     });
   }
 
+  function handleCommentChange(slideNumber: string, comment: string) {
+    setComments((prev) => ({ ...prev, [slideNumber]: comment }));
+  }
+
   function handleFileUploaded(elementId: string, url: string) {
     setValues((prev) => ({ ...prev, [elementId]: url }));
   }
@@ -100,6 +109,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
           sheetId: config.sheetId,
           responses: textResponses,
           deferred: Array.from(deferred),
+          slideComments: comments,
         }),
       });
 
@@ -192,8 +202,10 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
             driveFolderId={config.driveFolderId}
             values={values}
             deferred={deferred}
+            comment={comments[slideNum] || ""}
             onValueChange={handleValueChange}
             onDeferChange={handleDeferChange}
+            onCommentChange={handleCommentChange}
             onFileUploaded={handleFileUploaded}
           />
         ))}

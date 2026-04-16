@@ -12,8 +12,10 @@ interface SlideCardProps {
   driveFolderId: string;
   values: Record<string, string>;
   deferred: Set<string>;
+  comment: string;
   onValueChange: (elementId: string, value: string) => void;
   onDeferChange: (elementId: string, checked: boolean) => void;
+  onCommentChange: (slideNumber: string, comment: string) => void;
   onFileUploaded: (elementId: string, url: string) => void;
 }
 
@@ -37,8 +39,10 @@ export default function SlideCard({
   driveFolderId,
   values,
   deferred,
+  comment,
   onValueChange,
   onDeferChange,
+  onCommentChange,
   onFileUploaded,
 }: SlideCardProps) {
   const dataPhs = placeholders.filter(
@@ -191,6 +195,22 @@ export default function SlideCard({
           })}
         </div>
       )}
+
+      {/* Slide Comment */}
+      <div className="border-t border-neutral-100 px-5 py-4">
+        <label className="block text-sm font-medium text-neutral-700 mb-2">
+          General comments (optional)
+        </label>
+        <textarea
+          value={comment}
+          onChange={(e) => onCommentChange(slideNumber, e.target.value)}
+          placeholder="Any additional notes or context for this slide..."
+          rows={2}
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm
+                     focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                     placeholder:text-neutral-400"
+        />
+      </div>
     </div>
   );
 }
