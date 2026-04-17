@@ -106,6 +106,8 @@ export default function FileUpload({
     setFileName("");
     setPreview("");
     if (inputRef.current) inputRef.current.value = "";
+    // Notify parent that file was cleared
+    onUploaded(elementId, "");
   }
 
   if (uploadedUrl) {

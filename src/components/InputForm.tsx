@@ -35,6 +35,8 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     return { ...config.slideComments };
   });
 
+  const [cleared, setCleared] = useState<Set<string>>(new Set());
+
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -68,6 +70,29 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
 
   function handleValueChange(elementId: string, value: string) {
     setValues((prev) => ({ ...prev, [elementId]: value }));
+    // When user types, remove from cleared set
+    if (value.trim()) {
+      setCleared((prev) => {
+        const next = new Set(prev);
+        next.delete(elementId);
+        return next;
+      });
+    }
+  }
+
+  function handleClear(elementId: string) {
+    setValues((prev) => {
+      const next = { ...prev };
+      delete next[elementId];
+      return next;
+    });
+    setCleared((prev) => new Set([...prev, elementId]));
+    // Also remove from deferred if present
+    setDeferred((prev) => {
+      const next = new Set(prev);
+      next.delete(elementId);
+      return next;
+    });
   }
 
   function handleDeferChange(elementId: string, checked: boolean) {
@@ -85,6 +110,17 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
 
   function handleFileUploaded(elementId: string, url: string) {
     setValues((prev) => ({ ...prev, [elementId]: url }));
+    // If file is cleared (empty string), add to cleared set
+    if (!url) {
+      setCleared((prev) => new Set([...prev, elementId]));
+    } else {
+      // If file is uploaded, remove from cleared set
+      setCleared((prev) => {
+        const next = new Set(prev);
+        next.delete(elementId);
+        return next;
+      });
+    }
   }
 
   async function handleSave() {
@@ -111,6 +147,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
           sheetId: config.sheetId,
           responses: textResponses,
           deferred: Array.from(deferred),
+          cleared: Array.from(cleared),
           slideComments: comments,
           saveOnly: true,  // Flag to skip marking as "filled"
         }),
@@ -159,6 +196,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
           sheetId: config.sheetId,
           responses: textResponses,
           deferred: Array.from(deferred),
+          cleared: Array.from(cleared),
           slideComments: comments,
         }),
       });
@@ -251,9 +289,11 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
             driveFolderId={config.driveFolderId}
             values={values}
             deferred={deferred}
+            cleared={cleared}
             comment={comments[slideNum] || ""}
             onValueChange={handleValueChange}
             onDeferChange={handleDeferChange}
+            onClear={handleClear}
             onCommentChange={handleCommentChange}
             onFileUploaded={handleFileUploaded}
           />

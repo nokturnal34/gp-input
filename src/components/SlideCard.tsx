@@ -12,9 +12,11 @@ interface SlideCardProps {
   driveFolderId: string;
   values: Record<string, string>;
   deferred: Set<string>;
+  cleared: Set<string>;
   comment: string;
   onValueChange: (elementId: string, value: string) => void;
   onDeferChange: (elementId: string, checked: boolean) => void;
+  onClear: (elementId: string) => void;
   onCommentChange: (slideNumber: string, comment: string) => void;
   onFileUploaded: (elementId: string, url: string) => void;
 }
@@ -39,9 +41,11 @@ export default function SlideCard({
   driveFolderId,
   values,
   deferred,
+  cleared,
   comment,
   onValueChange,
   onDeferChange,
+  onClear,
   onCommentChange,
   onFileUploaded,
 }: SlideCardProps) {
@@ -109,29 +113,53 @@ export default function SlideCard({
                 )}
 
                 {fieldType === "long" ? (
-                  <textarea
-                    value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
-                    onChange={(e) => onValueChange(ph.elementId, e.target.value)}
-                    placeholder="Type your response here..."
-                    rows={3}
-                    disabled={isDeferred}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm
-                               focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
-                               disabled:bg-neutral-50 disabled:text-neutral-400
-                               placeholder:text-neutral-400"
-                  />
+                  <div className="relative">
+                    <textarea
+                      value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
+                      onChange={(e) => onValueChange(ph.elementId, e.target.value)}
+                      placeholder="Type your response here..."
+                      rows={3}
+                      disabled={isDeferred}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 pr-8 text-sm
+                                 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                                 disabled:bg-neutral-50 disabled:text-neutral-400
+                                 placeholder:text-neutral-400"
+                    />
+                    {(values[ph.elementId] || ph.clientResponse) && (
+                      <button
+                        onClick={() => onClear(ph.elementId)}
+                        className="absolute right-2 top-2 text-neutral-400 hover:text-neutral-700 font-semibold"
+                        title="Clear response"
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 ) : (
-                  <input
-                    type="text"
-                    value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
-                    onChange={(e) => onValueChange(ph.elementId, e.target.value)}
-                    placeholder="Type your response here..."
-                    disabled={isDeferred}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm
-                               focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
-                               disabled:bg-neutral-50 disabled:text-neutral-400
-                               placeholder:text-neutral-400"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
+                      onChange={(e) => onValueChange(ph.elementId, e.target.value)}
+                      placeholder="Type your response here..."
+                      disabled={isDeferred}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 pr-8 text-sm
+                                 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                                 disabled:bg-neutral-50 disabled:text-neutral-400
+                                 placeholder:text-neutral-400"
+                    />
+                    {(values[ph.elementId] || ph.clientResponse) && (
+                      <button
+                        onClick={() => onClear(ph.elementId)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 font-semibold"
+                        title="Clear response"
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 <label className="flex items-center gap-2 text-xs text-neutral-500">

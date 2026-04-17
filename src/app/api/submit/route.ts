@@ -7,13 +7,14 @@ interface SubmitPayload {
   sheetId: string;
   responses: Record<string, string>;
   deferred: string[];
+  cleared?: string[];
   slideComments?: Record<string, string>;
   saveOnly?: boolean;  // If true, save without marking as "filled"
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { clientSlug, sheetId, responses, deferred, slideComments }: SubmitPayload =
+    const { clientSlug, sheetId, responses, deferred, cleared, slideComments }: SubmitPayload =
       await request.json();
 
     if (!clientSlug || !sheetId) {
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
       for (const elementId of deferred) {
         await updateStatus(sheetId, elementId, "deferred");
         results[elementId] = true;
+      }
+    }
+
+    // Handle cleared items - write empty string to sheet
+    if (cleared && cleared.length > 0) {
+      for (const elementId of cleared) {
+        const success = await updateResponse(sheetId, elementId, "");
+        results[elementId] = success;
       }
     }
 
