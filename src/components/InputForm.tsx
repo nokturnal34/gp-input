@@ -83,11 +83,8 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
   }
 
   function handleClear(elementId: string) {
-    setValues((prev) => {
-      const next = { ...prev };
-      delete next[elementId];
-      return next;
-    });
+    console.log("handleClear called with:", elementId, "current values:", values);
+    setValues((prev) => ({ ...prev, [elementId]: "" }));
     setCleared((prev) => new Set([...prev, elementId]));
     // Also remove from deferred if present
     setDeferred((prev) => {

@@ -41,6 +41,7 @@ interface ClearButtonProps {
 }
 
 function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonProps) {
+  console.log("ClearButton rendered for", elementId, "onClear:", typeof onClear, "shouldShow:", shouldShow);
   if (!shouldShow) return null;
 
   const positionClass = position === "textarea" ? "top-2" : "top-1/2 -translate-y-1/2";
@@ -174,7 +175,7 @@ export default function SlideCard({
                 {fieldType === "long" ? (
                   <div className="relative">
                     <textarea
-                      value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
+                      value={values[ph.elementId] ?? (isFilled ? ph.clientResponse : "")}
                       onChange={(e) => onValueChange(ph.elementId, e.target.value)}
                       placeholder="Type your response here..."
                       rows={3}
@@ -195,7 +196,7 @@ export default function SlideCard({
                   <div className="relative">
                     <input
                       type="text"
-                      value={values[ph.elementId] || (isFilled ? ph.clientResponse : "")}
+                      value={values[ph.elementId] ?? (isFilled ? ph.clientResponse : "")}
                       onChange={(e) => onValueChange(ph.elementId, e.target.value)}
                       placeholder="Type your response here..."
                       disabled={isDeferred}
