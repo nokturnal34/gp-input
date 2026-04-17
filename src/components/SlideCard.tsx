@@ -33,6 +33,30 @@ function classifyFieldType(marker: string, promptText: string): "short" | "long"
   return "short";
 }
 
+interface ClearButtonProps {
+  elementId: string;
+  position: "textarea" | "input";
+  onClear: (elementId: string) => void;
+  shouldShow: boolean;
+}
+
+function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonProps) {
+  if (!shouldShow) return null;
+
+  const positionClass = position === "textarea" ? "top-2" : "top-1/2 -translate-y-1/2";
+
+  return (
+    <button
+      onClick={() => onClear(elementId)}
+      className={`absolute right-2 ${positionClass} text-neutral-400 hover:text-neutral-700 font-semibold`}
+      title="Clear response"
+      type="button"
+    >
+      ×
+    </button>
+  );
+}
+
 export default function SlideCard({
   slideNumber,
   placeholders,
@@ -125,16 +149,12 @@ export default function SlideCard({
                                  disabled:bg-neutral-50 disabled:text-neutral-400
                                  placeholder:text-neutral-400"
                     />
-                    {((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) && (
-                      <button
-                        onClick={() => onClear(ph.elementId)}
-                        className="absolute right-2 top-2 text-neutral-400 hover:text-neutral-700 font-semibold"
-                        title="Clear response"
-                        type="button"
-                      >
-                        ×
-                      </button>
-                    )}
+                    <ClearButton
+                      elementId={ph.elementId}
+                      position="textarea"
+                      onClear={onClear}
+                      shouldShow={((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) as boolean}
+                    />
                   </div>
                 ) : (
                   <div className="relative">
@@ -149,16 +169,12 @@ export default function SlideCard({
                                  disabled:bg-neutral-50 disabled:text-neutral-400
                                  placeholder:text-neutral-400"
                     />
-                    {((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) && (
-                      <button
-                        onClick={() => onClear(ph.elementId)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 font-semibold"
-                        title="Clear response"
-                        type="button"
-                      >
-                        ×
-                      </button>
-                    )}
+                    <ClearButton
+                      elementId={ph.elementId}
+                      position="input"
+                      onClear={onClear}
+                      shouldShow={((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) as boolean}
+                    />
                   </div>
                 )}
 

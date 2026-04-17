@@ -70,9 +70,10 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
 
   function handleValueChange(elementId: string, value: string) {
     setValues((prev) => ({ ...prev, [elementId]: value }));
-    // When user types, remove from cleared set
+    // When user types, remove from cleared set (only if it was cleared)
     if (value.trim()) {
       setCleared((prev) => {
+        if (!prev.has(elementId)) return prev; // No-op if not in cleared set
         const next = new Set(prev);
         next.delete(elementId);
         return next;

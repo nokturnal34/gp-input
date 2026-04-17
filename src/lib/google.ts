@@ -232,7 +232,7 @@ export async function uploadToDrive(
 }
 
 /** Convert 0-indexed column number to letter (0=A, 1=B, ..., 25=Z, 26=AA) */
-function colLetter(col: number): string {
+export function colLetter(col: number): string {
   let letter = "";
   let c = col;
   while (c >= 0) {

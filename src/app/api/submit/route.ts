@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateResponse, updateStatus, readSheet, getSheets } from "@/lib/google";
+import { updateResponse, updateStatus, readSheet, getSheets, colLetter } from "@/lib/google";
 import { cookies } from "next/headers";
 
 interface SubmitPayload {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle cleared items - write empty string to sheet
+    // Sync cleared fields to sheet as empty strings (preserves audit trail and schema consistency)
     if (cleared && cleared.length > 0) {
       for (const elementId of cleared) {
         const success = await updateResponse(sheetId, elementId, "");
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update slide comments
+    // Update slide comments (batch all updates into single API call)
     if (slideComments && Object.keys(slideComments).length > 0) {
       try {
         const sheets = getSheets();
@@ -68,24 +68,33 @@ export async function POST(request: NextRequest) {
         const slideCommentCol = headers.indexOf("slide_comment");
 
         if (slideCommentCol !== -1) {
-          // Batch update all rows for each slide with new comments
+          const updates: { range: string; values: string[][] }[] = [];
+
+          // Collect all comment updates
           for (const [slideNum, comment] of Object.entries(slideComments)) {
             if (!comment.trim()) continue;
 
-            // Find all rows with this slide_number and update their slide_comment column
+            // Find all rows with this slide_number
             for (let i = 0; i < sheetData.length; i++) {
               if (sheetData[i].slide_number === slideNum) {
                 const rowNum = i + 2; // +2: +1 for header, +1 for 1-indexed
-                const colLetter = String.fromCharCode(65 + slideCommentCol); // A=65
-
-                await sheets.spreadsheets.values.update({
-                  spreadsheetId: sheetId,
-                  range: `Sheet1!${colLetter}${rowNum}`,
-                  valueInputOption: "RAW",
-                  requestBody: { values: [[comment]] },
+                updates.push({
+                  range: `Sheet1!${colLetter(slideCommentCol)}${rowNum}`,
+                  values: [[comment]],
                 });
               }
             }
+          }
+
+          // Single batch update
+          if (updates.length > 0) {
+            await sheets.spreadsheets.values.batchUpdate({
+              spreadsheetId: sheetId,
+              requestBody: {
+                valueInputOption: "RAW",
+                data: updates,
+              },
+            });
           }
         }
       } catch (commentErr) {
