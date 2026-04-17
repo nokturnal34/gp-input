@@ -60,13 +60,14 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     const total = config.placeholders.length;
     const filled = config.placeholders.filter(
       (ph) =>
-        ph.status === "filled" ||
+        !cleared.has(ph.elementId) &&
+        (ph.status === "filled" ||
         values[ph.elementId]?.trim() ||
-        deferred.has(ph.elementId)
+        deferred.has(ph.elementId))
     ).length;
     const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
     return { totalFields: total, filledFields: filled, progressPct: pct };
-  }, [config.placeholders, values, deferred]);
+  }, [config.placeholders, values, deferred, cleared]);
 
   function handleValueChange(elementId: string, value: string) {
     setValues((prev) => ({ ...prev, [elementId]: value }));

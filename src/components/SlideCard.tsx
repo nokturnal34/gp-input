@@ -57,6 +57,29 @@ function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonPr
   );
 }
 
+type FieldState = "saved" | "unsaved" | "cleared" | "pristine";
+
+function getFieldState(
+  elementId: string,
+  ph: FormPlaceholder,
+  values: Record<string, string>,
+  cleared: Set<string>
+): FieldState {
+  if (cleared.has(elementId)) return "cleared";
+  const currentValue = values[elementId];
+  if (!currentValue?.trim()) return "pristine";
+  // Saved: value exists and matches what came from server
+  const matchesServer = ph.status === "filled" && currentValue === ph.clientResponse;
+  return matchesServer ? "saved" : "unsaved";
+}
+
+const borderClasses: Record<FieldState, string> = {
+  saved:    "border-green-400 focus:border-green-500 focus:ring-green-200",
+  unsaved:  "border-amber-400 focus:border-amber-500 focus:ring-amber-200",
+  cleared:  "border-red-300 border-dashed focus:border-red-400 focus:ring-red-200",
+  pristine: "border-neutral-300 focus:border-neutral-900 focus:ring-neutral-900",
+};
+
 export default function SlideCard({
   slideNumber,
   placeholders,
@@ -83,9 +106,10 @@ export default function SlideCard({
 
   const filledCount = placeholders.filter(
     (ph) =>
-      ph.status === "filled" ||
+      !cleared.has(ph.elementId) &&
+      (ph.status === "filled" ||
       values[ph.elementId]?.trim() ||
-      deferred.has(ph.elementId)
+      deferred.has(ph.elementId))
   ).length;
 
   return (
@@ -126,6 +150,7 @@ export default function SlideCard({
             const fieldType = classifyFieldType(ph.marker, ph.promptText);
             const isDeferred = deferred.has(ph.elementId);
             const isFilled = ph.status === "filled";
+            const fieldState = getFieldState(ph.elementId, ph, values, cleared);
 
             return (
               <div key={ph.elementId} className="space-y-1.5">
@@ -144,10 +169,10 @@ export default function SlideCard({
                       placeholder="Type your response here..."
                       rows={3}
                       disabled={isDeferred}
-                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 pr-8 text-sm
-                                 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                      className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm
+                                 focus:outline-none focus:ring-1 outline-none
                                  disabled:bg-neutral-50 disabled:text-neutral-400
-                                 placeholder:text-neutral-400"
+                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "pristine" : fieldState]}`}
                     />
                     <ClearButton
                       elementId={ph.elementId}
@@ -164,10 +189,10 @@ export default function SlideCard({
                       onChange={(e) => onValueChange(ph.elementId, e.target.value)}
                       placeholder="Type your response here..."
                       disabled={isDeferred}
-                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 pr-8 text-sm
-                                 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900
+                      className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm
+                                 focus:outline-none focus:ring-1 outline-none
                                  disabled:bg-neutral-50 disabled:text-neutral-400
-                                 placeholder:text-neutral-400"
+                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "pristine" : fieldState]}`}
                     />
                     <ClearButton
                       elementId={ph.elementId}
