@@ -112,21 +112,21 @@ export default function FileUpload({
 
   if (uploadedUrl) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+      <div className="rounded-lg border border-[#0028ff] bg-blue-50 p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {preview && (
               <img src={preview} alt="Preview" className="h-10 w-10 rounded object-cover" />
             )}
             <div>
-              <p className="text-sm font-medium text-green-800">
+              <p className="text-sm font-medium text-blue-800">
                 {fileName || "File uploaded"}
               </p>
               <a
                 href={uploadedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-green-600 underline"
+                className="text-xs text-blue-600 underline"
               >
                 View in Drive
               </a>

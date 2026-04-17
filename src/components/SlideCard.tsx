@@ -57,7 +57,7 @@ function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonPr
   );
 }
 
-type FieldState = "saved" | "unsaved" | "cleared" | "pristine";
+type FieldState = "saved" | "unsaved" | "default";
 
 function getFieldState(
   elementId: string,
@@ -65,20 +65,23 @@ function getFieldState(
   values: Record<string, string>,
   cleared: Set<string>
 ): FieldState {
-  if (cleared.has(elementId)) return "cleared";
+  // Cleared fields return to default (black border)
+  if (cleared.has(elementId)) return "default";
   const currentValue = values[elementId];
-  if (!currentValue?.trim()) return "pristine";
+  if (!currentValue?.trim()) return "default";
   // Saved: value exists and matches what came from server
   const matchesServer = ph.status === "filled" && currentValue === ph.clientResponse;
   return matchesServer ? "saved" : "unsaved";
 }
 
 const borderClasses: Record<FieldState, string> = {
-  saved:    "border-green-400 focus:border-green-500 focus:ring-green-200",
-  unsaved:  "border-amber-400 focus:border-amber-500 focus:ring-amber-200",
-  cleared:  "border-red-300 border-dashed focus:border-red-400 focus:ring-red-200",
-  pristine: "border-neutral-300 focus:border-neutral-900 focus:ring-neutral-900",
+  saved:    "border-[#0028ff]",     // Server-saved (blue)
+  unsaved:  "border-amber-400",     // Unsaved edit (amber/yellow)
+  default:  "border-black",         // Pristine, cleared, or deferred (black)
 };
+
+// Focus state: ALWAYS black, regardless of saved/unsaved state
+const focusClasses = "focus:border-black focus:outline-none focus:ring-1 focus:ring-black/30";
 
 export default function SlideCard({
   slideNumber,
@@ -142,10 +145,17 @@ export default function SlideCard({
 
       {/* Data/Input Fields */}
       {dataPhs.length > 0 && (
-        <div className="px-5 py-4 space-y-4 border-b border-neutral-200">
+        <div className="px-5 py-4 space-y-4 border-b border-black">
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
             Data / Input
           </p>
+          {dataPhs.some(ph => getFieldState(ph.elementId, ph, values, cleared) === "unsaved") && (
+            <div className="mb-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <p className="text-sm text-amber-900">
+                <strong>Unsaved changes:</strong> Click "Save & continue later" or "Submit responses" to persist your edits.
+              </p>
+            </div>
+          )}
           {dataPhs.map((ph) => {
             const fieldType = classifyFieldType(ph.marker, ph.promptText);
             const isDeferred = deferred.has(ph.elementId);
@@ -170,9 +180,9 @@ export default function SlideCard({
                       rows={3}
                       disabled={isDeferred}
                       className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm
-                                 focus:outline-none focus:ring-1 outline-none
+                                 ${focusClasses}
                                  disabled:bg-neutral-50 disabled:text-neutral-400
-                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "pristine" : fieldState]}`}
+                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "default" : fieldState]}`}
                     />
                     <ClearButton
                       elementId={ph.elementId}
@@ -190,9 +200,9 @@ export default function SlideCard({
                       placeholder="Type your response here..."
                       disabled={isDeferred}
                       className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm
-                                 focus:outline-none focus:ring-1 outline-none
+                                 ${focusClasses}
                                  disabled:bg-neutral-50 disabled:text-neutral-400
-                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "pristine" : fieldState]}`}
+                                 placeholder:text-neutral-400 ${borderClasses[isDeferred ? "default" : fieldState]}`}
                     />
                     <ClearButton
                       elementId={ph.elementId}
@@ -208,7 +218,7 @@ export default function SlideCard({
                     type="checkbox"
                     checked={isDeferred}
                     onChange={(e) => onDeferChange(ph.elementId, e.target.checked)}
-                    className="rounded border-neutral-300"
+                    className="rounded border-[#0028ff] accent-[#0028ff]"
                   />
                   Will provide later
                 </label>
@@ -220,8 +230,8 @@ export default function SlideCard({
 
       {/* Media Fields */}
       {mediaPhs.length > 0 && (
-        <div className="border-t-2 border-blue-200 px-5 py-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+        <div className="border-t-2 border-[#0028ff] px-5 py-4 space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#0028ff]">
             Media Requests
           </p>
           {mediaPhs.map((ph) => {
@@ -256,7 +266,7 @@ export default function SlideCard({
                     type="checkbox"
                     checked={isDeferred}
                     onChange={(e) => onDeferChange(ph.elementId, e.target.checked)}
-                    className="rounded border-neutral-300"
+                    className="rounded border-[#0028ff] accent-[#0028ff]"
                   />
                   Will provide later
                 </label>
