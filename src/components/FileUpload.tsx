@@ -163,10 +163,13 @@ export default function FileUpload({
         />
         {uploading ? (
           <div>
-            <p className="text-sm text-neutral-600">Uploading {fileName}...</p>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-[#0028ff]"></div>
+              <p className="text-sm text-neutral-600">Uploading {fileName}...</p>
+            </div>
             <div className="mt-2 h-1.5 w-full rounded-full bg-neutral-200">
               <div
-                className="h-1.5 rounded-full bg-neutral-900 transition-all duration-300"
+                className="h-1.5 rounded-full bg-[#0028ff] transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>

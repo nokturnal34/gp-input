@@ -263,7 +263,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
               </span>
               <div className="h-1.5 w-20 rounded-full bg-neutral-200">
                 <div
-                  className="h-1.5 rounded-full bg-neutral-900 transition-all duration-300"
+                  className="h-1.5 rounded-full bg-[#0028ff] transition-all duration-300"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
