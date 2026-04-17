@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import FileUpload from "./FileUpload";
+import { calculateFilledCount } from "@/lib/form-utils";
+import { FIELD_STATES, COLORS } from "@/lib/colors";
 import type { FormPlaceholder } from "@/lib/form-config";
 
 interface SlideCardProps {
@@ -41,7 +43,6 @@ interface ClearButtonProps {
 }
 
 function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonProps) {
-  console.log("ClearButton rendered for", elementId, "onClear:", typeof onClear, "shouldShow:", shouldShow);
   if (!shouldShow) return null;
 
   const positionClass = position === "textarea" ? "top-2" : "top-1/2 -translate-y-1/2";
@@ -76,9 +77,9 @@ function getFieldState(
 }
 
 const borderClasses: Record<FieldState, string> = {
-  saved:    "border-[#0028ff]",     // Server-saved (blue)
-  unsaved:  "border-amber-400",     // Unsaved edit (amber/yellow)
-  default:  "border-black",         // Pristine, cleared, or deferred (black)
+  saved:    FIELD_STATES.saved,
+  unsaved:  FIELD_STATES.unsaved,
+  default:  FIELD_STATES.default,
 };
 
 // Focus state: ALWAYS black, regardless of saved/unsaved state
@@ -101,20 +102,27 @@ export default function SlideCard({
   onFileUploaded,
 }: SlideCardProps) {
   const [commentExpanded, setCommentExpanded] = useState(false);
-  const dataPhs = placeholders.filter(
-    (ph) => classifyFieldType(ph.marker, ph.promptText) !== "file"
-  );
-  const mediaPhs = placeholders.filter(
-    (ph) => classifyFieldType(ph.marker, ph.promptText) === "file"
+
+  // Memoize field type classification to avoid 3x calls per field
+  const phClassifications = useMemo(
+    () => new Map(placeholders.map((ph) => [ph.elementId, classifyFieldType(ph.marker, ph.promptText)])),
+    [placeholders]
   );
 
-  const filledCount = placeholders.filter(
-    (ph) =>
-      !cleared.has(ph.elementId) &&
-      (ph.status === "filled" ||
-      values[ph.elementId]?.trim() ||
-      deferred.has(ph.elementId))
-  ).length;
+  const dataPhs = useMemo(
+    () => placeholders.filter((ph) => phClassifications.get(ph.elementId) !== "file"),
+    [placeholders, phClassifications]
+  );
+
+  const mediaPhs = useMemo(
+    () => placeholders.filter((ph) => phClassifications.get(ph.elementId) === "file"),
+    [placeholders, phClassifications]
+  );
+
+  const filledCount = useMemo(
+    () => calculateFilledCount(placeholders, values, deferred, cleared),
+    [placeholders, values, deferred, cleared]
+  );
 
   return (
     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
@@ -158,7 +166,7 @@ export default function SlideCard({
             </div>
           )}
           {dataPhs.map((ph) => {
-            const fieldType = classifyFieldType(ph.marker, ph.promptText);
+            const fieldType = phClassifications.get(ph.elementId) || "short";
             const isDeferred = deferred.has(ph.elementId);
             const isFilled = ph.status === "filled";
             const fieldState = getFieldState(ph.elementId, ph, values, cleared);

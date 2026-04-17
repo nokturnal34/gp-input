@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useCallback } from "react";
 import SlideCard from "./SlideCard";
+import { ProgressBar } from "./ui/ProgressBar";
+import { calculateFilledCount, buildTextResponses } from "@/lib/form-utils";
 import type { FormConfig } from "@/lib/form-config";
 
 interface InputFormProps {
@@ -58,13 +60,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
   // Progress - memoized to ensure it updates correctly
   const { totalFields, filledFields, progressPct } = useMemo(() => {
     const total = config.placeholders.length;
-    const filled = config.placeholders.filter(
-      (ph) =>
-        !cleared.has(ph.elementId) &&
-        (ph.status === "filled" ||
-        values[ph.elementId]?.trim() ||
-        deferred.has(ph.elementId))
-    ).length;
+    const filled = calculateFilledCount(config.placeholders, values, deferred, cleared);
     const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
     return { totalFields: total, filledFields: filled, progressPct: pct };
   }, [config.placeholders, values, deferred, cleared]);
@@ -83,7 +79,6 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
   }
 
   function handleClear(elementId: string) {
-    console.log("handleClear called with:", elementId, "current values:", values);
     setValues((prev) => ({ ...prev, [elementId]: "" }));
     setCleared((prev) => new Set([...prev, elementId]));
     // Also remove from deferred if present
@@ -127,16 +122,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     setError("");
 
     try {
-      const textResponses: Record<string, string> = {};
-      for (const [elementId, value] of Object.entries(values)) {
-        const ph = config.placeholders.find((p) => p.elementId === elementId);
-        if (!ph) continue;
-        if (ph.clientResponse === value) continue;
-        if (value.startsWith("https://drive.google.com")) continue;
-        if (value.trim()) {
-          textResponses[elementId] = value;
-        }
-      }
+      const textResponses = buildTextResponses(values, config.placeholders);
 
       const res = await fetch("/api/submit", {
         method: "POST",
@@ -173,19 +159,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
     setError("");
 
     try {
-      // Filter to only new/changed text responses (files are uploaded immediately)
-      const textResponses: Record<string, string> = {};
-      for (const [elementId, value] of Object.entries(values)) {
-        const ph = config.placeholders.find((p) => p.elementId === elementId);
-        if (!ph) continue;
-        // Skip if unchanged from existing response
-        if (ph.clientResponse === value) continue;
-        // Skip file uploads (already saved)
-        if (value.startsWith("https://drive.google.com")) continue;
-        if (value.trim()) {
-          textResponses[elementId] = value;
-        }
-      }
+      const textResponses = buildTextResponses(values, config.placeholders);
 
       const res = await fetch("/api/submit", {
         method: "POST",
@@ -261,12 +235,7 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
               <span className="text-xs text-neutral-500">
                 {filledFields}/{totalFields} items
               </span>
-              <div className="h-1.5 w-20 rounded-full bg-neutral-200">
-                <div
-                  className="h-1.5 rounded-full bg-[#0028ff] transition-all duration-300"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
+              <ProgressBar percentage={progressPct} width="w-20" />
             </div>
           </div>
         </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { ProgressBar } from "./ui/ProgressBar";
+import { COLORS } from "@/lib/colors";
 
 interface FileUploadProps {
   elementId: string;
@@ -112,7 +114,7 @@ export default function FileUpload({
 
   if (uploadedUrl) {
     return (
-      <div className="rounded-lg border border-[#0028ff] bg-blue-50 p-3">
+      <div className={`rounded-lg border-[${COLORS.primary}] bg-blue-50 p-3 border`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {preview && (
@@ -164,14 +166,11 @@ export default function FileUpload({
         {uploading ? (
           <div>
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-[#0028ff]"></div>
+              <div className={`h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-[${COLORS.primary}]`}></div>
               <p className="text-sm text-neutral-600">Uploading {fileName}...</p>
             </div>
-            <div className="mt-2 h-1.5 w-full rounded-full bg-neutral-200">
-              <div
-                className="h-1.5 rounded-full bg-[#0028ff] transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="mt-2">
+              <ProgressBar percentage={progress} />
             </div>
           </div>
         ) : (
