@@ -321,8 +321,8 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
               onClick={handleSave}
               disabled={saving || submitting}
               className="rounded-lg bg-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700
-                         hover:bg-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed
-                         transition-colors"
+                         hover:bg-neutral-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all duration-200"
             >
               {saving ? "Saving..." : "Save & continue later"}
             </button>
@@ -330,8 +330,8 @@ export default function InputForm({ config, clientSlug, clientName }: InputFormP
               onClick={handleSubmit}
               disabled={submitting || saving}
               className="rounded-lg bg-neutral-900 px-5 py-2 text-sm font-medium text-white
-                         hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
-                         transition-colors"
+                         hover:bg-neutral-800 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all duration-200"
             >
               {submitting ? "Submitting..." : "Submit responses"}
             </button>

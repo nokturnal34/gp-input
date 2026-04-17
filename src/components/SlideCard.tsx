@@ -48,7 +48,7 @@ function ClearButton({ elementId, position, onClear, shouldShow }: ClearButtonPr
   return (
     <button
       onClick={() => onClear(elementId)}
-      className={`absolute right-2 ${positionClass} text-neutral-400 hover:text-neutral-700 font-semibold`}
+      className={`absolute right-2 ${positionClass} w-6 h-6 flex items-center justify-center rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 font-semibold transition-colors duration-200`}
       title="Clear response"
       type="button"
     >
@@ -118,8 +118,8 @@ export default function SlideCard({
 
       {/* Data/Input Fields */}
       {dataPhs.length > 0 && (
-        <div className="px-5 py-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        <div className="px-5 py-4 space-y-4 border-b border-neutral-200">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
             Data / Input
           </p>
           {dataPhs.map((ph) => {
@@ -195,8 +195,8 @@ export default function SlideCard({
 
       {/* Media Fields */}
       {mediaPhs.length > 0 && (
-        <div className="border-t border-neutral-100 px-5 py-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-500">
+        <div className="border-t-2 border-blue-200 px-5 py-4 space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
             Media Requests
           </p>
           {mediaPhs.map((ph) => {
