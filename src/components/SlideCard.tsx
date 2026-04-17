@@ -125,7 +125,7 @@ export default function SlideCard({
                                  disabled:bg-neutral-50 disabled:text-neutral-400
                                  placeholder:text-neutral-400"
                     />
-                    {((values[ph.elementId]?.trim()) || (ph.clientResponse?.trim())) && (
+                    {((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) && (
                       <button
                         onClick={() => onClear(ph.elementId)}
                         className="absolute right-2 top-2 text-neutral-400 hover:text-neutral-700 font-semibold"
@@ -149,7 +149,7 @@ export default function SlideCard({
                                  disabled:bg-neutral-50 disabled:text-neutral-400
                                  placeholder:text-neutral-400"
                     />
-                    {((values[ph.elementId]?.trim()) || (ph.clientResponse?.trim())) && (
+                    {((values[ph.elementId]?.trim()) || (isFilled && ph.clientResponse?.trim())) && (
                       <button
                         onClick={() => onClear(ph.elementId)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 font-semibold"
