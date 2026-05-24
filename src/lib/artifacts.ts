@@ -1,10 +1,7 @@
 /**
  * Artifact fetching utility
- * Reads HTML artifacts from public/artifacts directory
+ * Reads HTML artifacts from public/artifacts directory via internal fetch
  */
-
-import { readFile } from "fs/promises";
-import { join } from "path";
 
 interface FetchArtifactResult {
   content: string | null;
@@ -17,22 +14,28 @@ export async function readArtifactFile(
 ): Promise<FetchArtifactResult> {
   try {
     // Artifact files stored in public/artifacts/{client}/{slug}.html
-    // Use __dirname to find the current directory reliably on Vercel
-    const rootDir = join(__dirname, "..", "..");
-    const filePath = join(
-      rootDir,
-      "public",
-      "artifacts",
-      client,
-      `${slug}.html`
-    );
+    // Fetch from the static public URL (works on Vercel and localhost)
+    const url = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ""}/artifacts/${client}/${slug}.html`;
 
-    const content = await readFile(filePath, "utf-8");
-    return { content };
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message.includes("ENOENT")) {
+    const response = await fetch(url, {
+      // Verify artifact exists, don't follow redirects for 404s
+      redirect: "manual",
+    });
+
+    if (response.status === 404) {
       return { content: null };
     }
+
+    if (!response.ok) {
+      return {
+        content: null,
+        error: `Error loading artifact: ${response.status}`,
+      };
+    }
+
+    const content = await response.text();
+    return { content };
+  } catch (err: unknown) {
     const error = err instanceof Error ? err.message : "Unknown error";
     return { content: null, error };
   }
