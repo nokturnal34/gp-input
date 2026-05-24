@@ -17,8 +17,10 @@ export async function readArtifactFile(
 ): Promise<FetchArtifactResult> {
   try {
     // Artifact files stored in public/artifacts/{client}/{slug}.html
+    // Use __dirname to find the current directory reliably on Vercel
+    const rootDir = join(__dirname, "..", "..");
     const filePath = join(
-      process.cwd(),
+      rootDir,
       "public",
       "artifacts",
       client,
