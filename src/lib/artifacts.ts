@@ -3,6 +3,9 @@
  * Reads HTML artifacts from public/artifacts directory
  */
 
+import { readFile } from "fs/promises";
+import { join } from "path";
+
 interface FetchArtifactResult {
   content: string | null;
   error?: string;
@@ -14,23 +17,20 @@ export async function readArtifactFile(
 ): Promise<FetchArtifactResult> {
   try {
     // Artifact files stored in public/artifacts/{client}/{slug}.html
-    const url = `/artifacts/${client}/${slug}.html`;
-    const response = await fetch(url);
+    const filePath = join(
+      process.cwd(),
+      "public",
+      "artifacts",
+      client,
+      `${slug}.html`
+    );
 
-    if (response.status === 404) {
-      return { content: null };
-    }
-
-    if (!response.ok) {
-      return {
-        content: null,
-        error: `Error loading artifact: ${response.status}`,
-      };
-    }
-
-    const content = await response.text();
+    const content = await readFile(filePath, "utf-8");
     return { content };
   } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("ENOENT")) {
+      return { content: null };
+    }
     const error = err instanceof Error ? err.message : "Unknown error";
     return { content: null, error };
   }
