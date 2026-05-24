@@ -21,8 +21,8 @@ export async function GET(
       );
     }
 
-    // Fetch artifact
-    const result = await readArtifactFile(clientSlug, slug);
+    // Fetch artifact with request context for proper URL construction
+    const result = await readArtifactFile(clientSlug, slug, _request);
 
     if (result.error) {
       return NextResponse.json(
